@@ -1,71 +1,72 @@
-var Application = {};
-var $map, w_orig, h_orig, ratio, factor = 1;
-var markers = [
-	{left: 230, top: 226, data: "I'm in the middle"},
-	{left: 190, top: 36, data: "Hey diddle diddle"},
-	{left: 258, top: 400, data: "Wassup??"}
-];
+function Application(markers) {
+	this.$map = undefined;
+	this.w_orig = undefined;
+	this.h_orig = undefined;
+	this.ratio = undefined;
+	this.factor = 1;
+	this.markers = markers;
 
-var popmarker = function(data) {
+	this.popmarker = function(data) {
+		alert(data.marker.data);
+	};
 
-	alert(data.marker.data);
-};
+	this.move_markers = function(factor) {
+		var marker;
+		for (var i in this.markers) {
+			marker = this.markers[i];
+			marker.$el.css({
+				left: marker.left * factor - marker.shift_left,
+				top: marker.top * factor - marker.shift_top,
+				position: 'absolute'
+			});
+		}
+	};
 
-var move_markers = function(factor) {
-	for (var i in markers) {
-		markers[i].$el.css({
-			left: markers[i].left * factor - markers[i].shift_left,
-			top: markers[i].top * factor - markers[i].shift_top,
-			position: 'absolute'
-		});
-	}
-};
+	this.resize_img = function() {
+		var w = $(window).innerWidth();
+		var h = $(window).innerHeight();
 
-var resize_img = function() {
-	var w = $(window).innerWidth();
-	var h = $(window).innerHeight();
+		if (w / this.w_orig < h / this.h_orig) {
+			this.$map.width(w).height(w / this.ratio);
+			this.factor = w / this.w_orig;
+		} else {
+			this.$map.height(h).width(h * this.ratio);
+			this.factor = h / this.h_orig;
+		}
 
-	if (w / w_orig < h / h_orig) {
-		$map.width(w).height(w / ratio);
-		factor = w / w_orig;
-	} else {
-		$map.height(h).width(h * ratio);
-		factor = h / h_orig;
-	}
+		this.move_markers(this.factor);
 
-	move_markers(factor);
+	};
 
-};
+	this.run = function(){
 
-var run = function(){
+		for (var i in this.markers) {
+			marker = this.markers[i];
+			marker.$el = $('<div class="marker" id="marker_' + i + '" />');
+			marker.$el.css({left: marker.left, top: marker.top, position: 'absolute'});
+			marker.$el.html("<img src='http://cdn1.iconfinder.com/data/icons/iconbeast-lite/30/plus-sign.png'>");
+			marker.$el.click({index: i, marker: marker}, this.popmarker);
+			$('body').append(marker.$el);
 
-	for (var i in markers) {
-		marker = markers[i];
-		marker.$el = $('<div class="marker" id="marker_' + i + '" />');
-		marker.$el.css({left: marker.left, top: marker.top, position: 'absolute'});
-		marker.$el.html("<img src='http://cdn1.iconfinder.com/data/icons/iconbeast-lite/30/plus-sign.png'>");
-		marker.$el.click({index: i, marker: marker}, popmarker);
-		$('body').append(marker.$el);
+			marker.shift_left = marker.$el.width() / 2;
+			marker.shift_top = marker.$el.height() / 2;
 
-		marker.shift_left = marker.$el.width() / 2;
-		marker.shift_top = marker.$el.height() / 2;
+		}
 
-	}
+		this.$map = $('#map');
+		//var abs_shift_left = $abs.width() / 2;
+		//var abs_shift_top = $abs.height() / 2;
 
-	$map = $('#map');
-	//var abs_shift_left = $abs.width() / 2;
-	//var abs_shift_top = $abs.height() / 2;
+		//abs_left += abs_shift_left;
+		//abs_top += abs_shift_top;
 
-	//abs_left += abs_shift_left;
-	//abs_top += abs_shift_top;
-
-	w_orig = $map.width();
-	h_orig = $map.height();
-	ratio = w_orig / h_orig;
-	factor = 1;
+		this.w_orig = this.$map.width();
+		this.h_orig = this.$map.height();
+		this.ratio = this.w_orig / this.h_orig;
+		this.factor = 1;
 
 
-	resize_img();
-	$(window).resize(resize_img);
-};
-
+		this.resize_img();
+		$(window).resize($.proxy(this.resize_img, this));
+	};
+}
