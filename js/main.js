@@ -26,45 +26,57 @@ function Map($el) {
 
 }
 
-function Marker($el, data) {
-	this.$el = $el;
+function Marker(data) {
+	this.$el = undefined;
+	this.width = undefined;
+	this.height = undefined;
 	this.left = data.left;
 	this.top = data.top;
 	this.data = data.data;
-	this.shift_left = $el.width() / 2;
-	this.shift_top = $el.height() / 2;
-		//abs_left += abs_shift_left;
-		//abs_top += abs_shift_top;
+	this.center = undefined;
+
 	this.popmarker = function(e) {
 		console.log(arguments);
 		alert(this.data);
 	};
+
+	this.reposition = function(factor) {
+		this.shift_left = this.$el.width() / 2;
+		this.shift_top = this.$el.height() / 2;
+		this.center = {
+			x: this.left + this.shift_left,
+			y: this.top + this.shift_top
+		};
+		this.$el.css({
+			left: this.center.x * factor - this.shift_left,
+			top: this.center.y * factor - this.shift_top,
+			position: 'absolute'
+		});
+	};
+
+
+	this.initElement = function() {
+		this.$el = $('<div />');
+		this.$el.html("<img width='29' height='30' src='http://cdn1.iconfinder.com/data/icons/iconbeast-lite/30/plus-sign.png'>");
+		this.$el.click($.proxy(this.popmarker, this));
+		$('body').append(this.$el);
+
+		this.reposition(1);
+	};
+
+	this.initElement();
 }
 
 function MarkerCollection(marker_data) {
 	this.markers = [];
 	var marker;
-	var $el;
 	for (var i in marker_data) {
-		marker = marker_data[i];
-		$el = $('<div />');
-		$el.css({left: marker.left, top: marker.top, position: 'absolute'});
-		$el.html("<img src='http://cdn1.iconfinder.com/data/icons/iconbeast-lite/30/plus-sign.png'>");
-		$('body').append($el);
-		marker_obj = new Marker($el, marker);
-		marker_obj.$el.click($.proxy(marker_obj.popmarker, marker_obj));
-		this.markers.push(marker_obj);
+		this.markers.push(new Marker(marker_data[i]));
 	}
 
 	this.reposition = function(factor) {
-		var marker;
 		for (var i in this.markers) {
-			marker = this.markers[i];
-			marker.$el.css({
-				left: marker.left * factor - marker.shift_left,
-				top: marker.top * factor - marker.shift_top,
-				position: 'absolute'
-			});
+			$.proxy(this.markers[i].reposition(factor), this.markers[i]);
 		}
 	};
 
