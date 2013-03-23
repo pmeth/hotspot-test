@@ -34,10 +34,35 @@ function Marker(data) {
 	this.top = data.top;
 	this.data = data.data;
 	this.center = undefined;
+	this.is_open = false;
+	this.$popup = undefined;
 
 	this.popmarker = function(e) {
-		console.log(arguments);
-		alert(this.data);
+		if (this.is_open) {
+			this.close();
+		} else {
+			this.open();
+		}
+	};
+	this.open = function() {
+		var el_position = this.$el.position();
+		this.$popup = $('<span />');
+		this.$popup.html(this.data);
+		this.$popup.css({
+			backgroundColor: 'white',
+			padding: 5,
+			border: '3px solid black',
+			position: 'absolute',
+			top: el_position.top,
+			left: el_position.left + 40
+		});
+		$('body').append(this.$popup);
+		this.is_open = true;
+	};
+
+	this.close = function() {
+		this.$popup.remove();
+		this.is_open = false;
 	};
 
 	this.reposition = function(factor) {

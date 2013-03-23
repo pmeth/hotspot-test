@@ -13,7 +13,7 @@
 		<script type='text/javascript' src='js/main.js'></script>
 		<script type='text/javascript'>
 			var app = new Application($('#map'), [
-				{left: 230, top: 226, data: "I'm in the middle"},
+				{left: 230, top: 226, data: "I'm in the middle<br><img src='http://dummyimage.com/250x180.jpg'>"},
 				{left: 190, top: 36, data: "Hey diddle diddle"},
 				{left: 258, top: 400, data: "Wassup??"}
 			]);
