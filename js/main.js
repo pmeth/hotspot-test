@@ -11,7 +11,9 @@ function Map($el) {
 		this.ratio = this.width_orig / this.height_orig;
 		this.factor = 1;
 
-		this.fit();
+		$(document).on('window_resize', $.proxy(function(event, width, height) {
+		    this.fit(width, height);
+		}, this));
 	};
 
 	this.fit = function(width, height) {
@@ -22,6 +24,7 @@ function Map($el) {
 			this.$el.height(height).width(height * this.ratio);
 			this.factor = height / this.height_orig;
 		}
+		$(document).trigger('map_resize', [ this.factor ]);
 	};
 
 }
@@ -90,21 +93,17 @@ function Marker(data) {
 	};
 
 	this.initElement();
+	$(document).on('map_resize', $.proxy(function(event, factor) {
+		this.reposition(factor);
+	}, this));
+
 }
 
 function MarkerCollection(marker_data) {
 	this.markers = [];
-	var marker;
-	for (var i in marker_data) {
+	for (i in marker_data) {
 		this.markers.push(new Marker(marker_data[i]));
 	}
-
-	this.reposition = function(factor) {
-		for (var i in this.markers) {
-			$.proxy(this.markers[i].reposition(factor), this.markers[i]);
-		}
-	};
-
 }
 
 function Application(map, marker_data) {
@@ -113,16 +112,16 @@ function Application(map, marker_data) {
 
 	this.markers = new MarkerCollection(marker_data);
 
-	this.resize_map = function() {
+	this.resize_map = function(event) {
 		var width = $(window).innerWidth();
 		var height = $(window).innerHeight();
 
-		$.proxy(this.map.fit(width, height), this.map);
-		$.proxy(this.markers.reposition(this.map.factor), this.markers);
+		$(document).trigger('window_resize', [ width, height ]);
 	};
 
 	this.run = function(){
 		this.resize_map();
-		$(window).resize($.proxy(this.resize_map, this));
+
+		$(window).on('resize', $.proxy(this.resize_map, this));
 	};
 }
